@@ -18,25 +18,27 @@ jobs:
         with:
           node-version: '22'
 
-      - name: 3. Setup Java JDK 21 (Required for Android Gradle)
+      - name: 3. Setup Java JDK 17 (For Capacitor Android Gradle)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
 
-      - name: 4. Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: 5. Install Web Dependencies & Build Fluid Studio
+      - name: 4. Build Web Bundle & Compile Android APK
         run: |
+          if [ ! -f package.json ]; then
+            SUBDIR=$(find . -maxdepth 2 -name "package.json" -not -path "*/node_modules/*" | head -n 1 | xargs dirname)
+            if [ -n "$SUBDIR" ] && [ "$SUBDIR" != "." ]; then
+              echo "Entering subfolder: $SUBDIR"
+              cd "$SUBDIR"
+            fi
+          fi
+
           npm install --legacy-peer-deps
           npm run build
 
-      - name: 6. Install Capacitor Android & Generate Android Project
-        run: |
-          npm install --legacy-peer-deps @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-          if [ ! -f capacitor.config.json ]; then
-            cat << 'EOF' > capacitor.config.json
+          npm install --legacy-peer-deps @capacitor/core@6.2.0 @capacitor/cli@6.2.0 @capacitor/android@6.2.0
+          cat << 'EOF' > capacitor.config.json
           {
             "appId": "com.itihaskarsamay.fluidstudio",
             "appName": "Fluid Itihaskar",
@@ -44,19 +46,21 @@ jobs:
             "bundledWebRuntime": false
           }
           EOF
-          fi
-          npx cap add android || true
+
+          rm -rf android
+          npx cap add android
           npx cap sync android
 
-      - name: 7. Build Debug Android APK via Gradle
-        run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: 8. Upload Ready-to-Install Android APK
+          mkdir -p "$GITHUB_WORKSPACE/apk-out"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/apk-out/fluid-itihaskar-studio.apk"
+
+      - name: 5. Upload Ready-to-Install Android APK
         uses: actions/upload-artifact@v4
         with:
           name: fluid-itihaskar-android-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: apk-out/fluid-itihaskar-studio.apk
           if-no-files-found: error
