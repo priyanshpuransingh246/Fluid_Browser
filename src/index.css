@@ -1,0 +1,145 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --ground: #120400;
+  --ink: #ffffff;
+  --soft: rgba(255, 255, 255, 0.75);
+  --faint: rgba(255, 255, 255, 0.7);
+  --flame: #ff3d00;
+  --lit: #ff8a1f;
+  --amber: #ffb36b;
+  --dark: #180600;
+  --line: rgba(255, 255, 255, 0.14);
+  --glass: rgba(56, 20, 6, 0.45);
+  --glass2: rgba(40, 13, 3, 0.62);
+  --display: 'Inter Tight', system-ui, sans-serif;
+  --body: 'Inter', system-ui, sans-serif;
+  --serif: 'Instrument Serif', Georgia, serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100svh;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--display);
+    letter-spacing: -0.025em;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  }
+
+  em, .font-serif-italic {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--lit);
+  }
+}
+
+@keyframes itk-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes itk-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes itk-glow {
+  from {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes itk-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(28px);
+  }
+}
+
+@keyframes itk-nudge {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+.itk-home-bg {
+  background: radial-gradient(
+      120% 60% at 50% 112%,
+      #ff3d00 0%,
+      #ff8a1f 9%,
+      rgba(255, 61, 0, 0.38) 28%,
+      rgba(18, 4, 0, 0) 62%
+    ),
+    var(--ground);
+}
+
+.itk-studio-bg {
+  background: radial-gradient(
+      90% 40% at 50% -8%,
+      rgba(255, 61, 0, 0.32) 0%,
+      rgba(18, 4, 0, 0) 70%
+    ),
+    var(--ground);
+}
+
+.itk-horizon-glow {
+  background: radial-gradient(
+    60% 70% at 50% 100%,
+    rgba(255, 138, 31, 0.55),
+    rgba(255, 61, 0, 0) 70%
+  );
+  animation: itk-glow 7s ease-in-out infinite alternate;
+}
+
+.itk-watermark {
+  position: fixed;
+  left: clamp(12px, 3vw, 30px);
+  bottom: clamp(-14px, -3vw, -46px);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(62px, 18vw, 270px);
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  animation: itk-fade 1.6s 0.2s both, itk-drift 16s 2s ease-in-out infinite alternate;
+}
+
+.itk-knob-arrow {
+  animation: itk-nudge 1.7s ease-in-out infinite;
+}

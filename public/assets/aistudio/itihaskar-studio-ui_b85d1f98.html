@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#120400">
+<title>ItihaskarStudio — AI Documentary Automation Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<!--
+=====================================================================
+ BACKEND CONNECTION GUIDE (for Gemini / developer)
+ This file is UI only. Every button is already wired to a hook in the
+ `ITK.handlers` object at the bottom of this file. Replace the stub
+ bodies with real calls (fetch to Google Apps Script URL, local PC
+ bridge, etc). A handler may be async; throw an Error to show failure.
+
+ ACTION NAME        TRIGGERED BY                     READ INPUTS FROM
+ ---------------    -----------------------------    -------------------
+ open-account       Home: "Slide to Open Account"    (needs logged-in user)
+ login              Login card slide button          #loginCode
+ register           Register card slide button       #regName, #regDob
+ logout             Studio: Logout                   -
+ start-over         Studio: Start Over               -
+ open-bot           Bot cards (ctx.data.bot = 1|2|3) -
+ sync-drive         Drive panel: Sync Drive Now      -
+ run-next-scene     Scene Queue slide button         -
+
+ UI HELPERS you can call after backend replies:
+   ITK.show('home' | 'studio')           switch screen
+   ITK.setMember('ITK-1234 Member')      header member label
+   ITK.setStats({total,yes,dropped,pending})  scene counters
+   ITK.setDrive('Google Drive Direct Sync Ready', true|false)  status pill
+   ITK.say('loginMsg' | 'regMsg', 'text', isError)  inline message
+=====================================================================
+-->
+<style>
+:root{
+  --ground:#120400; --ink:#fff; --soft:rgba(255,255,255,.75); --faint:rgba(255,255,255,.7);
+  --flame:#ff3d00; --lit:#ff8a1f; --amber:#ffb36b; --dark:#180600;
+  --line:rgba(255,255,255,.14); --glass:rgba(56,20,6,.45); --glass2:rgba(40,13,3,.62);
+  --display:'Inter Tight',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif; --serif:'Instrument Serif',Georgia,serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100svh;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--lit);outline-offset:3px;border-radius:6px}
+em{font-family:var(--serif);font-weight:400;color:var(--lit)}
+
+/* ---------- shared ---------- */
+.view{min-height:100svh;display:flex;flex-direction:column}
+.brand{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:-.025em}
+.kicker{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.btn{min-height:44px;padding:0 20px;border-radius:999px;font-size:14px;font-weight:500;border:1px solid rgba(255,255,255,.3);background:rgba(28,10,2,.4)}
+.btn:hover{background:rgba(255,255,255,.12)}
+.btn--white{background:#fff;color:var(--dark);border-color:#fff;font-weight:600}
+.btn--white:hover{background:#fff4ec}
+.card{border:1px solid var(--line);border-radius:24px;background:var(--glass)}
+.dot{width:8px;height:8px;border-radius:50%;background:#7ee787;flex:none}
+.dot.off{background:var(--amber)}
+.field label{display:block;margin-bottom:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,.85)}
+.field input{width:100%;min-height:52px;padding:0 16px;border:1px solid rgba(255,255,255,.22);border-radius:14px;background:rgba(18,4,0,.7);color:#fff;font:inherit;font-size:17px;color-scheme:dark}
+.field input::placeholder{color:rgba(255,255,255,.55)}
+.msg{min-height:20px;margin-top:12px;font-size:14px;color:var(--amber)}
+.msg.err{color:#ffd0c2}
+
+/* ---------- slide-to-confirm button ---------- */
+.slide{position:relative;width:100%;height:54px;touch-action:none;cursor:grab;border-radius:999px;overflow:hidden;user-select:none;
+  background:linear-gradient(96deg,var(--flame),var(--lit));box-shadow:0 14px 40px rgba(255,61,0,.38)}
+.sl-label,.sl-done{position:absolute;inset:0 0 0 54px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:var(--dark);white-space:nowrap;pointer-events:none}
+.sl-done{opacity:0}
+.slide.is-done .sl-done{opacity:1}
+.slide.is-done .sl-label{opacity:0!important}
+.sl-knob{position:absolute;left:7px;top:7px;width:40px;height:40px;border-radius:50%;background:var(--dark);color:var(--lit);display:grid;place-items:center;cursor:grab;touch-action:none;transition:transform .3s cubic-bezier(.16,1,.3,1)}
+.sl-knob.drag{transition:none;cursor:grabbing}
+.sl-knob svg{width:18px;height:18px}
+.slide.busy{opacity:.85}
+
+/* ---------- HOME ---------- */
+#home{position:relative;overflow:hidden;
+  background:radial-gradient(120% 60% at 50% 112%,#ff3d00 0%,#ff8a1f 9%,rgba(255,61,0,.38) 28%,rgba(18,4,0,0) 62%),var(--ground)}
+.mark{position:absolute;left:30px;bottom:-46px;font-family:var(--display);font-weight:700;font-size:clamp(100px,18vw,270px);letter-spacing:-.05em;line-height:1;color:rgba(255,255,255,.06);pointer-events:none}
+.nav{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:22px clamp(18px,3vw,44px)}
+.pillnav{display:none;gap:4px;padding:5px;border:1px solid var(--line);border-radius:12px;background:rgba(28,10,2,.4)}
+.pillnav a{padding:9px 16px;border-radius:8px;font-size:14px;color:rgba(255,255,255,.85)}
+.pillnav a:first-child{background:rgba(255,255,255,.07)}
+.nav-actions{display:flex;gap:10px}
+@media(min-width:900px){.pillnav{display:flex}}
+.hero{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:56px;width:100%;max-width:1360px;margin:0 auto;padding:48px clamp(18px,3vw,44px) 40px}
+.lead{flex:1 1 520px;display:flex;flex-direction:column;gap:28px}
+.tag{align-self:flex-start;padding:7px 14px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(40,13,3,.55)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(40px,6vw,78px);line-height:1.02;letter-spacing:-.035em}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cta .slide{width:310px;max-width:100%}
+.link{padding:14px 22px;font-size:15px;color:rgba(255,255,255,.88)}
+.login{flex:1 1 340px;max-width:440px;padding:32px;border:1px solid rgba(255,255,255,.16);border-radius:26px;background:rgba(40,13,3,.66);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.tabs{display:flex;gap:4px;padding:4px;margin-bottom:26px;border-radius:12px;background:rgba(255,255,255,.06)}
+.tabs button{flex:1;min-height:44px;border-radius:9px;font-size:14px;font-weight:500;color:rgba(255,255,255,.8)}
+.tabs button[aria-selected="true"]{background:#fff;color:var(--dark);font-weight:600}
+.login h2{font-family:var(--display);font-size:26px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+.login .hint{font-size:14px;line-height:1.5;color:var(--faint);margin-bottom:22px}
+.login .field+.field{margin-top:14px}
+.login .slide{margin-top:18px}
+.foot{position:relative;margin-top:auto;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:26px clamp(18px,3vw,44px) 30px;font-size:13px;color:rgba(255,255,255,.85)}
+.foot span:first-child{display:inline-flex;align-items:center;gap:9px}
+
+/* ---------- STUDIO ---------- */
+#studio{background:radial-gradient(90% 40% at 50% -8%,rgba(255,61,0,.32) 0%,rgba(18,4,0,0) 70%),var(--ground)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:20px clamp(18px,3vw,44px);border-bottom:1px solid rgba(255,255,255,.1)}
+.sync{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:rgba(40,13,3,.55);font-size:13px;color:rgba(255,255,255,.88)}
+.who{display:flex;align-items:center;gap:12px}
+.who b{font-size:14px;font-weight:600;color:var(--amber)}
+main{width:100%;max-width:1360px;margin:0 auto;padding:44px clamp(18px,3vw,44px) 56px;display:flex;flex-direction:column;gap:36px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px}
+.head .kicker{margin-bottom:10px}
+h1.s{font-size:clamp(34px,4.4vw,56px);line-height:1.05}
+.row{display:flex;flex-wrap:wrap;gap:20px}
+.bot{flex:1 1 300px;display:flex;flex-direction:column;gap:14px;padding:28px}
+.bot .v{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--amber)}
+.bot h2{font-family:var(--display);font-size:26px;font-weight:600;letter-spacing:-.02em}
+.bot p{font-size:14.5px;line-height:1.6;color:var(--soft)}
+.bot .slide{margin-top:auto}
+.panel{padding:28px;background:var(--glass2)}
+.panel h2{font-family:var(--display);font-size:20px;font-weight:600}
+.panel-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.panel .btn{min-height:40px;padding:0 18px;font-size:13px}
+pre{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.8;color:rgba(255,255,255,.85);overflow-x:auto}
+.queue{display:flex;flex-direction:column;gap:18px}
+.nums{display:flex;flex-wrap:wrap;gap:12px}
+.num{flex:1 1 110px;padding:16px;border-radius:16px;background:rgba(255,255,255,.06)}
+.num b{display:block;font-family:var(--display);font-size:30px;font-weight:600;line-height:1.2}
+.num span{font-size:12.5px;color:var(--faint)}
+.num.yes b{color:#7ee787}.num.no b{color:var(--amber)}
+.queue p{font-size:14px;line-height:1.55;color:var(--faint)}
+.queue .slide{margin-top:auto}
+
+/* ---------- landing page motion ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes glow{from{opacity:.35;transform:scale(1)}to{opacity:.95;transform:scale(1.1)}}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(28px)}}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+#home::before{content:"";position:absolute;left:-10%;right:-10%;bottom:-30%;height:75%;pointer-events:none;
+  background:radial-gradient(60% 70% at 50% 100%,rgba(255,138,31,.55),rgba(255,61,0,0) 70%);animation:glow 7s ease-in-out infinite alternate}
+#rocks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#home .mark{animation:fade 1.6s .3s both,drift 16s 2s ease-in-out infinite alternate}
+#home .nav{animation:fade .9s both}
+#home .lead>.tag{animation:rise .8s .05s cubic-bezier(.16,1,.3,1) both}
+#home .lead h1{animation:rise .9s .18s cubic-bezier(.16,1,.3,1) both}
+#home .cta{animation:rise .9s .34s cubic-bezier(.16,1,.3,1) both}
+#home .login{animation:rise .9s .46s cubic-bezier(.16,1,.3,1) both}
+#home .foot{animation:fade 1s .7s both}
+#home .cta .sl-knob svg{animation:nudge 1.7s ease-in-out infinite}
+
+@media(prefers-reduced-motion:reduce){*,*::before{transition-duration:.001ms!important;animation-duration:.001ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+
+<!-- =============================== HOME =============================== -->
+<div class="view" id="home" data-view="home">
+  <div class="mark" aria-hidden="true">ITIHASKAR</div>
+  <canvas id="rocks" aria-hidden="true"></canvas>
+
+  <header class="nav">
+    <a class="brand" href="#home">ItihaskarStudio</a>
+    <nav class="pillnav" aria-label="Primary">
+      <a href="#home">Pipeline</a><a href="#home">Bots</a><a href="#home">Drive Sync</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="btn" type="button" data-tab-open="login">Login</button>
+      <button class="btn btn--white" type="button" data-tab-open="register">Register</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="lead">
+      <p class="kicker tag">AI Documentary Automation Platform</p>
+      <h1>We Build AI Systems That Save Time And <em>Scale</em></h1>
+      <div class="cta">
+        <div class="slide" data-action="open-account" data-label="Slide to Open Account" data-done="Opening Studio…"></div>
+        <a class="link" href="#register" data-tab-open="register">Naya member? Register karein</a>
+      </div>
+    </div>
+
+    <div class="login" id="loginCard">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tabLogin" aria-selected="true" data-tab="login">Login</button>
+        <button type="button" role="tab" id="tabRegister" aria-selected="false" data-tab="register">Register</button>
+      </div>
+
+      <div id="panelLogin" role="tabpanel" aria-labelledby="tabLogin">
+        <h2>Enter Your Unique Code</h2>
+        <p class="hint">Apna unique code daalein jo registration ke time mila tha.</p>
+        <div class="field">
+          <label for="loginCode">Unique code</label>
+          <input id="loginCode" type="text" placeholder="ITK-XXXX" autocomplete="off" style="letter-spacing:.08em">
+        </div>
+        <div class="slide" data-action="login" data-label="Slide to Login" data-done="Opening Studio…"></div>
+        <p class="msg" id="loginMsg" role="status"></p>
+      </div>
+
+      <div id="panelRegister" role="tabpanel" aria-labelledby="tabRegister" hidden>
+        <h2>Register Member</h2>
+        <p class="hint">Registration ke baad aapko ek unique code milega. Admin approval ke baad active hoga.</p>
+        <div class="field">
+          <label for="regName">Full Name</label>
+          <input id="regName" type="text" placeholder="Poora naam" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="regDob">Date of Birth</label>
+          <input id="regDob" type="date">
+        </div>
+        <div class="slide" data-action="register" data-label="Slide to Register" data-done="Registering…"></div>
+        <p class="msg" id="regMsg" role="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span><i class="dot"></i>Google Drive Direct Sync Ready</span>
+    <span>Itihaskar Samay • Member Portal</span>
+  </footer>
+</div>
+
+<!-- ============================== STUDIO ============================== -->
+<div class="view" id="studio" data-view="studio" hidden>
+  <header class="bar">
+    <a class="brand" href="#studio">ItihaskarStudio</a>
+    <span class="sync"><i class="dot" id="driveDot"></i><span id="driveStatus">Google Drive Direct Sync Ready</span></span>
+    <div class="who">
+      <b id="memberLabel">ITK-XXXX Member</b>
+      <button class="btn" type="button" data-action="logout">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="head">
+      <div>
+        <p class="kicker">Question 1 • All 3 Local PC Bots Included</p>
+        <h1 class="s">Kaun sa <em>Bot</em> chalana hai?</h1>
+      </div>
+      <button class="btn" type="button" data-action="start-over">Start Over</button>
+    </div>
+
+    <div class="row">
+      <article class="card bot">
+        <span class="v">BOT 1 • v20</span>
+        <h2>ChatGPT Image Bot</h2>
+        <p>7 Chrome accounts setup, Add from Library character reuse, 3-method image downloader aur rate-limit par auto account switch.</p>
+        <div class="slide" data-action="open-bot" data-bot="1" data-label="Slide to Open Bot 1" data-done="Opening Bot 1…"></div>
+      </article>
+      <article class="card bot">
+        <span class="v">BOT 2 • v2.8</span>
+        <h2>Flow AI Video Bot</h2>
+        <p>Jio Pro accounts, 3-layer auto-verify (credits before/after), same-day exhausted memory. Omni 3.1 Flash, 16:9, 720p, 6s.</p>
+        <div class="slide" data-action="open-bot" data-bot="2" data-label="Slide to Open Bot 2" data-done="Opening Bot 2…"></div>
+      </article>
+      <article class="card bot">
+        <span class="v">BOT 3 • v1.1</span>
+        <h2>4K UHD Video Enhancer</h2>
+        <p>Long documentary ko 3840×2160 mein upscale karein — Lanczos, color grade, 2.35:1 cinema bars aur GPU acceleration.</p>
+        <div class="slide" data-action="open-bot" data-bot="3" data-label="Slide to Open Bot 3" data-done="Opening Bot 3…"></div>
+      </article>
+    </div>
+
+    <div class="row">
+      <section class="card panel" style="flex:1 1 520px">
+        <div class="panel-h">
+          <h2>Google Drive Direct Folder</h2>
+          <button class="btn" type="button" data-action="sync-drive">Sync Drive Now</button>
+        </div>
+<pre>My Drive / Itihaskar_Bot /
+├─ team_profiles / Member_1 /
+│  ├─ chrome_accounts / (Account_1 .. 7)
+│  ├─ flow_accounts / (Flow_Account_1 .. 3)
+│  └─ account_setup_state.json
+├─ PDFs /
+├─ Characters /
+├─ output_images / output_videos / output_4k_videos /
+└─ scene_account_reports /</pre>
+      </section>
+
+      <section class="card panel queue" style="flex:1 1 420px">
+        <h2>Scene Queue</h2>
+        <div class="nums">
+          <div class="num"><b id="statTotal">0</b><span>Total Scenes</span></div>
+          <div class="num yes"><b id="statYes">0</b><span>Bana (YES)</span></div>
+          <div class="num no"><b id="statDropped">0</b><span>Dropped (NO)</span></div>
+          <div class="num"><b id="statPending">0</b><span>Pending</span></div>
+        </div>
+        <p>Next up: prompt copy hoga, character reference check hoga, aur AI tab khulega.</p>
+        <div class="slide" data-action="run-next-scene" data-label="Slide to Run Next Scene" data-done="Running next scene…"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+/* =====================================================================
+   ITK — UI controller + backend hooks.
+   Edit ONLY `ITK.handlers` to connect the real backend.
+   ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const ITK = window.ITK = {
+  /* ---------- UI helpers (safe to call from backend code) ---------- */
+  show(view) {
+    $$('[data-view]').forEach((v) => (v.hidden = v.dataset.view !== view));
+    try { history.replaceState(null, '', '#' + view); } catch (e) { /* sandboxed preview: URL change not allowed, ignore */ }
+    window.scrollTo(0, 0);
+  },
+  setMember(text) { $('#memberLabel').textContent = text; },
+  setStats(s = {}) {
+    if ('total' in s) $('#statTotal').textContent = s.total;
+    if ('yes' in s) $('#statYes').textContent = s.yes;
+    if ('dropped' in s) $('#statDropped').textContent = s.dropped;
+    if ('pending' in s) $('#statPending').textContent = s.pending;
+  },
+  setDrive(text, ok = true) {
+    $('#driveStatus').textContent = text;
+    $('#driveDot').classList.toggle('off', !ok);
+  },
+  say(id, text, isError = false) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.classList.toggle('err', isError);
+  },
+
+  /* ---------- BACKEND HOOKS: replace these stubs ---------- */
+  handlers: {
+    // ctx = { el, data (dataset of the clicked control) }
+    async 'open-account'() {
+      // TODO: check session; if not logged in, focus the login box instead.
+      ITK.show('studio');
+    },
+    async login() {
+      const code = $('#loginCode').value.trim();
+      if (!code) throw new Error('Pehle apna unique code daalein.');
+      // TODO: const res = await fetch(APPS_SCRIPT_URL, {method:'POST', body: JSON.stringify({action:'login', code})});
+      await wait(600);
+      ITK.setMember(code.toUpperCase() + ' Member');
+      ITK.show('studio');
+    },
+    async register() {
+      const name = $('#regName').value.trim();
+      const dob = $('#regDob').value;
+      if (!name || !dob) throw new Error('Naam aur Date of Birth dono bharein.');
+      // TODO: send {name, dob} to backend, receive the generated unique code.
+      await wait(600);
+      ITK.say('regMsg', 'Registration Successful! Yeh code save kar lo: ITK-0000 (admin approval ke baad active hoga).');
+    },
+    async logout() { /* TODO: clear session */ ITK.show('home'); },
+    async 'start-over'() { /* TODO: reset wizard state */ ITK.setStats({ total: 0, yes: 0, dropped: 0, pending: 0 }); },
+    async 'open-bot'(ctx) {
+      const bot = ctx.data.bot; // "1" ChatGPT Image Bot, "2" Flow AI Video Bot, "3" 4K UHD Enhancer
+      console.log('TODO open bot', bot);
+      await wait(600);
+    },
+    async 'sync-drive'() {
+      ITK.setDrive('Syncing…', false);
+      // TODO: call Google Drive sync
+      await wait(800);
+      ITK.setDrive('Google Drive Direct Sync Ready', true);
+    },
+    async 'run-next-scene'() {
+      // TODO: trigger next scene on the local PC bridge, then ITK.setStats({...})
+      await wait(800);
+    },
+  },
+};
+
+/* ---------- run a handler safely ---------- */
+async function run(action, el, errTarget) {
+  const fn = ITK.handlers[action];
+  if (!fn) return console.warn('No handler for', action);
+  try { await fn({ el, data: el.dataset }); }
+  catch (err) { if (errTarget) ITK.say(errTarget, err.message || 'Kuch galat hua, dobara try karein.', true); else console.error(err); throw err; }
+}
+
+/* ---------- slide-to-confirm buttons ---------- */
+const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const errFor = { login: 'loginMsg', register: 'regMsg' };
+
+$$('.slide').forEach((el) => {
+  el.innerHTML = '<span class="sl-label"></span><span class="sl-done" aria-live="polite"></span><button type="button" class="sl-knob"></button>';
+  const label = $('.sl-label', el), done = $('.sl-done', el), knob = $('.sl-knob', el);
+  label.textContent = el.dataset.label; done.textContent = el.dataset.done;
+  knob.innerHTML = ARROW; knob.setAttribute('aria-label', el.dataset.label);
+  let x = 0, max = 0, start = 0, travel = 0, lastX = 0, dragging = false, busy = false;
+
+  const set = (v) => { x = v; knob.style.transform = `translateX(${v}px)`; label.style.opacity = Math.max(0, 1 - v / (max * 0.8 || 1)); };
+  const reset = () => { el.classList.remove('is-done', 'busy'); busy = false; label.style.opacity = 1; set(0); };
+
+  async function complete() {
+    busy = true; max = el.clientWidth - 54; set(max); el.classList.add('is-done', 'busy');
+    try { await run(el.dataset.action, el, errFor[el.dataset.action]); }
+    catch (e) { done.textContent = 'Dobara try karein'; await wait(1400); done.textContent = el.dataset.done; }
+    await wait(900); reset();
+  }
+
+/* finger can touch ANYWHERE on the track: the knob jumps under the finger, then follows it */
+  el.addEventListener('pointerdown', (e) => {
+    if (busy) return;
+    max = el.clientWidth - 54;
+    const x0 = Math.max(0, Math.min(max, e.clientX - el.getBoundingClientRect().left - 27));
+    start = e.clientX - x0; lastX = e.clientX; travel = 0; dragging = true;
+    el.setPointerCapture(e.pointerId); knob.classList.add('drag'); set(x0);
+  });
+  el.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    travel += Math.abs(e.clientX - lastX); lastX = e.clientX;
+    set(Math.max(0, Math.min(max, e.clientX - start)));
+  });
+  const up = () => {
+    if (!dragging) return;
+    dragging = false; knob.classList.remove('drag');
+    (x >= max * 0.9 && travel > 12) ? complete() : set(0);   // a plain tap never triggers
+  };
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+  knob.addEventListener('keydown', (e) => {         // keyboard: Enter / Space / →
+    if (['Enter', ' ', 'ArrowRight'].includes(e.key)) { e.preventDefault(); if (!busy) complete(); }
+  });
+});
+
+/* ---------- normal (small) action buttons ---------- */
+$$('button[data-action]').forEach((b) => b.addEventListener('click', () => run(b.dataset.action, b).catch(() => {})));
+
+/* ---------- login / register tabs ---------- */
+function openTab(name) {
+  const login = name === 'login';
+  $('#panelLogin').hidden = !login; $('#panelRegister').hidden = login;
+  $('#tabLogin').setAttribute('aria-selected', login);
+  $('#tabRegister').setAttribute('aria-selected', !login);
+}
+$$('[data-tab]').forEach((b) => b.addEventListener('click', () => openTab(b.dataset.tab)));
+$$('[data-tab-open]').forEach((b) => b.addEventListener('click', (e) => {
+  e.preventDefault(); openTab(b.dataset.tabOpen); $('#loginCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}));
+$('#loginCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#panelLogin .sl-knob').focus(); });
+
+/* ---------- falling orange asteroids (top-right -> bottom-left) ---------- */
+(function () {
+  const cv = $('#rocks'), home = $('#home'), ctx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DX = -0.78, DY = 0.62, cols = ['255,138,31', '255,61,0', '255,179,107'];
+  let W = 0, H = 0, rocks = [], last = 0;
+  const spawn = (init) => ({
+    r: 0.8 + Math.random() * 1.6, v: 0.06 + Math.random() * 0.11, len: 18 + Math.random() * 52,
+    c: cols[(Math.random() * 3) | 0], a: 0.45 + Math.random() * 0.5,
+    x: Math.random() * (W + H), y: init ? Math.random() * H : -30,
+  });
+  function size() {
+    const d = Math.min(window.devicePixelRatio || 1, 2);
+    W = home.clientWidth; H = home.clientHeight;
+    cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+    const n = Math.max(14, Math.min(34, Math.round(W / 46)));
+    while (rocks.length < n) rocks.push(spawn(true));
+    rocks.length = n;
+  }
+  function draw(dt) {
+    ctx.clearRect(0, 0, W, H);
+    for (const k of rocks) {
+      k.x += DX * k.v * dt; k.y += DY * k.v * dt;
+      if (k.y > H + 40 || k.x < -80) Object.assign(k, spawn(false));
+      const tx = k.x - DX * k.len, ty = k.y - DY * k.len;
+      const g = ctx.createLinearGradient(k.x, k.y, tx, ty);
+      g.addColorStop(0, `rgba(${k.c},${k.a})`); g.addColorStop(1, `rgba(${k.c},0)`);
+      ctx.strokeStyle = g; ctx.lineWidth = k.r; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(k.x, k.y); ctx.lineTo(tx, ty); ctx.stroke();
+      ctx.shadowColor = 'rgba(255,138,31,.9)'; ctx.shadowBlur = 8;
+      ctx.fillStyle = `rgba(${k.c},${Math.min(1, k.a + 0.2)})`;
+      ctx.beginPath(); ctx.arc(k.x, k.y, k.r, 0, 6.2832); ctx.fill(); ctx.shadowBlur = 0;
+    }
+  }
+  function loop(t) {
+    const dt = Math.min(50, t - last || 16); last = t;
+    if (!home.hidden && !document.hidden) draw(dt);
+    requestAnimationFrame(loop);
+  }
+  size(); window.addEventListener('resize', size);
+  if (window.ResizeObserver) new ResizeObserver(size).observe(home);
+  if (reduce) draw(0); else requestAnimationFrame(loop);
+})();
+
+/* ---------- initial screen from URL hash ---------- */
+ITK.show(location.hash === '#studio' ? 'studio' : 'home');
+</script>
+</body>
+</html>

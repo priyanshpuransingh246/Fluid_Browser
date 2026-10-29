@@ -1,0 +1,97 @@
+==========================================================================
+   ITIHASKAR SAMAY - SCENE & ACCOUNT STATUS REPORT (FLOW AI BOT v3.0)
+==========================================================================
+PDF / Source File          : Great_Pyramid_Part2_Scenes_41-80.pdf
+Date & Time                : 2026-10-27 14:30:17
+Total Scenes Selected      : 39 -> [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80]
+Total Scenes BANE (YES)    : 31 -> [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 54, 55, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 77, 78, 79, 80]
+Total Scenes NAHI BANE (NO): 8 -> [51, 52, 53, 57, 61, 74, 75, 76]
+Today's Exhausted Accounts : ['Flow_Account_1', 'Flow_Account_2']
+--------------------------------------------------------------------------
+   ACCOUNT-WISE SUMMARY (KIS ACCOUNT MEIN KON-KON SA SCENE BANA):
+--------------------------------------------------------------------------
+   * Flow_Account_1   : 3 Videos -> Scene_41, Scene_42, Scene_43
+   * Flow_Account_2   : 5 Videos -> Scene_44, Scene_45, Scene_46, Scene_47, Scene_48
+   * Flow_Account_3   : 23 Videos -> Scene_49, Scene_50, Scene_54, Scene_55, Scene_56, Scene_58, Scene_59, Scene_60, Scene_62, Scene_63, Scene_64, Scene_65, Scene_66, Scene_67, Scene_68, Scene_69, Scene_70, Scene_71, Scene_72, Scene_77, Scene_78, Scene_79, Scene_80
+
+--------------------------------------------------------------------------
+   SCENE-BY-SCENE TABLE (SCENE BANA YA NAHI + KIS ACCOUNT MEIN BANA):
+--------------------------------------------------------------------------
+   SCENE        | BANA YA NAHI?        | ACCOUNT NAME     | DETAILS / REASON
+   ----------------------------------------------------------------------
+   Scene_41    | Haan Bana (YES)      | Flow_Account_1   | Image: Scene_41.png (Verified Created)
+   Scene_42    | Haan Bana (YES)      | Flow_Account_1   | Image: Scene_42.png (Verified Created)
+   Scene_43    | Haan Bana (YES)      | Flow_Account_1   | Image: Scene_43.png (Verified Created)
+   Scene_44    | Haan Bana (YES)      | Flow_Account_2   | Image: Scene_44.png (Verified Created)
+   Scene_45    | Haan Bana (YES)      | Flow_Account_2   | Image: Scene_45.png (Verified Created)
+   Scene_46    | Haan Bana (YES)      | Flow_Account_2   | Image: Scene_46.png (Verified Created)
+   Scene_47    | Haan Bana (YES)      | Flow_Account_2   | Image: Scene_47.png (Verified Created)
+   Scene_48    | Haan Bana (YES)      | Flow_Account_2   | Image: Scene_48.png (Verified Created)
+   Scene_49    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_49.png (Verified Created)
+   Scene_50    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_50.png (Verified Created)
+   Scene_51    | Nahi Bana (NO)       | ---              | Video nahi bana (Na rendering chali aur na naya video card aaya) (Scene_51.png)
+   Scene_52    | Nahi Bana (NO)       | ---              | Video nahi bana (Na rendering chali aur na naya video card aaya) (Scene_52.png)
+   Scene_53    | Nahi Bana (NO)       | ---              | Video nahi bana (Na rendering chali aur na naya video card aaya) (Scene_53.png)
+   Scene_54    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_54.png (Verified Created)
+   Scene_55    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_55.png (Verified Created)
+   Scene_56    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_56.png (Verified Created)
+   Scene_57    | Nahi Bana (NO)       | ---              | Video nahi bana (Na rendering chali aur na naya video card aaya) (Scene_57.png)
+   Scene_58    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_58.png (Verified Created)
+   Scene_59    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_59.png (Verified Created)
+   Scene_60    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_60.png (Verified Created)
+   Scene_61    | Nahi Bana (NO)       | ---              | Video nahi bana (Na rendering chali aur na naya video card aaya) (Scene_61.png)
+   Scene_62    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_62.png (Verified Created)
+   Scene_63    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_63.png (Verified Created)
+   Scene_64    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_64.png (Verified Created)
+   Scene_65    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_65.png (Verified Created)
+   Scene_66    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_66.png (Verified Created)
+   Scene_67    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_67.png (Verified Created)
+   Scene_68    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_68.png (Verified Created)
+   Scene_69    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_69.png (Verified Created)
+   Scene_70    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_70.png (Verified Created)
+   Scene_71    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_71.png (Verified Created)
+   Scene_72    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_72.png (Verified Created)
+   Scene_74    | Nahi Bana (NO)       | ---              | Flow AI Rejected Video Prompt (Policy Violation) (Scene_74.png)
+   Scene_75    | Nahi Bana (NO)       | ---              | Flow AI Rejected Video Prompt (Policy Violation) (Scene_75.png)
+   Scene_76    | Nahi Bana (NO)       | ---              | Flow AI Rejected Video Prompt (Policy Violation) (Scene_76.png)
+   Scene_77    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_77.png (Verified Created)
+   Scene_78    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_78.png (Verified Created)
+   Scene_79    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_79.png (Verified Created)
+   Scene_80    | Haan Bana (YES)      | Flow_Account_3   | Image: Scene_80.png (Verified Created)
+
+--------------------------------------------------------------------------
+   DROPPED / POLICY ERROR SCENES KE VIDEO PROMPTS (JO NAHI BANE):
+--------------------------------------------------------------------------
+
+[Scene_51 | Image: Scene_51.png] -> NAHI BANA (NO)
+   Reason       : Video nahi bana (Na rendering chali aur na naya video card aaya)
+   Video Prompt : Starting from the uploaded image as the first frame, keep its style, lighting and quality consistent throughout, in one continuous shot with no jump cuts. The Egyptologists nod confidently as one of them traces the shaft on the plan. The camera pushes in slowly over the group. Use uploaded image and same cinematic lighting in whole video. No cut in video. Negative prompt: no cuts, no jump cuts, no scene change, no lighting change, no style change.
+
+[Scene_52 | Image: Scene_52.png] -> NAHI BANA (NO)
+   Reason       : Video nahi bana (Na rendering chali aur na naya video card aaya)
+   Video Prompt : Starting from the uploaded image as the first frame, keep its style, lighting and quality consistent throughout, in one continuous shot with no jump cuts. The pale air currents flow slowly through the shafts into the chambers. The camera pushes in slowly. Use uploaded image and same cinematic lighting in whole video. No cut in video. Negative prompt: no cuts, no jump cuts, no scene change, no lighting change, no style change.
+
+[Scene_53 | Image: Scene_53.png] -> NAHI BANA (NO)
+   Reason       : Video nahi bana (Na rendering chali aur na naya video card aaya)
+   Video Prompt : Starting from the uploaded image as the first frame, keep its style, lighting and quality consistent throughout, in one continuous shot with no jump cuts. He tilts his hand side to side and raises an eyebrow with a doubtful look. The camera pushes in slowly. Use uploaded image and same cinematic lighting in whole video. No cut in video. Negative prompt: no cuts, no jump cuts, no scene change, no lighting change, no style change.
+
+[Scene_57 | Image: Scene_57.png] -> NAHI BANA (NO)
+   Reason       : Video nahi bana (Na rendering chali aur na naya video card aaya)
+   Video Prompt : Starting from the uploaded image as the first frame, keep its style, lighting and quality consistent throughout, in one continuous shot with no jump cuts. The masons ease the stone block into place with wooden levers until the opening disappears. The camera pushes in slowly. Use uploaded image and same cinematic lighting in whole video. No cut in video. Negative prompt: no cuts, no jump cuts, no scene change, no lighting change, no style change.
+
+[Scene_61 | Image: Scene_61.png] -> NAHI BANA (NO)
+   Reason       : Video nahi bana (Na rendering chali aur na naya video card aaya)
+   Video Prompt : Starting from the uploaded image as the first frame, keep its style, lighting and quality consistent throughout, in one continuous shot with no jump cuts. The hammer strikes the chisel and the stone chips fall away in a cloud of dust. The camera holds close and pushes in slowly. Use uploaded image and same cinematic lighting in whole video. No cut in video. Negative prompt: no cuts, no jump cuts, no scene change, no lighting change, no style change.
+
+[Scene_74 | Image: Scene_74.png] -> NAHI BANA (NO)
+   Reason       : Flow AI Rejected Video Prompt (Policy Violation)
+   Video Prompt : Starting from the uploaded image as the first frame, keep its style, lighting and quality consistent throughout, in one continuous shot with no jump cuts. The journalists rush between desks while the TV screens flicker with the pyramid image. The camera glides slowly forward through the newsroom. Use uploaded image and same cinematic lighting in whole video. No cut in video. Negative prompt: no cuts, no jump cuts, no scene change, no lighting change, no style change.
+
+[Scene_75 | Image: Scene_75.png] -> NAHI BANA (NO)
+   Reason       : Flow AI Rejected Video Prompt (Policy Violation)
+   Video Prompt : Starting from the uploaded image as the first frame, keep its style, lighting and quality consistent throughout, in one continuous shot with no jump cuts. The engineers work steadily while the light changes slowly across the table. The camera holds a medium shot and pushes in slowly. Use uploaded image and same cinematic lighting in whole video. No cut in video. Negative prompt: no cuts, no jump cuts, no scene change, no lighting change, no style change.
+
+[Scene_76 | Image: Scene_76.png] -> NAHI BANA (NO)
+   Reason       : Flow AI Rejected Video Prompt (Policy Violation)
+   Video Prompt : Starting from the uploaded image as the first frame, keep its style, lighting and quality consistent throughout, in one continuous shot with no jump cuts. The crew moves around quickly as the presenter prepares to go live. The camera pushes in slowly over the chamber. Use uploaded image and same cinematic lighting in whole video. No cut in video. Negative prompt: no cuts, no jump cuts, no scene change, no lighting change, no style change.
+==========================================================================
